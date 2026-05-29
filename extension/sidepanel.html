@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tailor</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-logo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+      </svg>
+      Tailor
+    </div>
+    <span class="header-badge">v0</span>
+  </header>
+
+  <!-- Profile preview (populated by JS) -->
+  <div id="profile-section" class="profile-section hidden">
+    <div class="profile-avatar" id="profile-avatar"></div>
+    <div class="profile-info">
+      <div class="profile-name" id="profile-name"></div>
+      <div class="profile-headline" id="profile-headline"></div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div id="empty-state" class="empty-state">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#b0b8c1"
+         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+    <p>Navigate to a LinkedIn profile and click<br><strong>Draft Outreach</strong> to get started.</p>
+  </div>
+
+  <!-- Form -->
+  <form id="draft-form" class="form hidden">
+
+    <div class="field">
+      <label for="role-input">Role / Job Context</label>
+      <textarea id="role-input" placeholder="e.g. Senior Frontend Engineer at Acme — we need someone who's built complex data-dense UIs at scale. Salary £90k, hybrid London." rows="4"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Tone</label>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="tone" value="warm" checked />
+          <span>Warm</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="tone" value="direct" />
+          <span>Direct</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="tone" value="casual" />
+          <span>Casual</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Outreach Goal</label>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="goal" value="cold opener" checked />
+          <span>Cold opener</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="goal" value="follow-up" />
+          <span>Follow-up</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="goal" value="InMail" />
+          <span>InMail</span>
+        </label>
+      </div>
+    </div>
+
+    <button type="submit" id="draft-btn" class="btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+           style="margin-right:6px;vertical-align:-2px">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      Draft Openers
+    </button>
+  </form>
+
+  <!-- Loading -->
+  <div id="loading" class="loading hidden">
+    <div class="spinner"></div>
+    <p>Drafting openers…</p>
+  </div>
+
+  <!-- Error -->
+  <div id="error-box" class="error-box hidden">
+    <strong>Error</strong>
+    <span id="error-msg"></span>
+    <button id="error-dismiss" class="btn-ghost">Dismiss</button>
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="results hidden">
+    <div class="results-header">
+      <span id="results-label">3 openers for <strong id="results-name"></strong></span>
+      <button id="redraft-btn" class="btn-ghost">Redraft</button>
+    </div>
+    <div id="variants-list"></div>
+  </div>
+
+  <!-- Backend URL setting (footer) -->
+  <footer class="footer">
+    <details>
+      <summary>Settings</summary>
+      <div class="setting-row">
+        <label for="backend-url-input">Backend URL</label>
+        <input id="backend-url-input" type="url" placeholder="http://localhost:3001" />
+        <button id="save-url-btn" class="btn-ghost btn-sm">Save</button>
+      </div>
+    </details>
+  </footer>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
