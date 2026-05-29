@@ -1,6 +1,6 @@
 // Tailor – side panel logic
 
-const DEFAULT_BACKEND = 'http://localhost:3001';
+const DEFAULT_BACKEND = 'https://recruiter-outreach-assistant.vercel.app';
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
