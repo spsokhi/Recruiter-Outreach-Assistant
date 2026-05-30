@@ -66,6 +66,24 @@ function setProfile(profile) {
   $('profile-name').textContent = profile.name || 'Unknown';
   $('profile-headline').textContent = profile.headline || profile.url || '';
 
+  // Show captured profile text + character count indicator
+  const profileText = formatProfile(profile);
+  $('profile-data-input').value = profileText;
+
+  const charCount = profileText.length;
+  const countEl = $('profile-char-count');
+  if (charCount > 500) {
+    countEl.textContent = `(${charCount} chars — good)`;
+    countEl.className = 'good';
+  } else if (charCount > 0) {
+    countEl.textContent = `(${charCount} chars — scroll the profile more for better results)`;
+    countEl.className = 'warn';
+  } else {
+    countEl.textContent = '(nothing captured — paste profile text below)';
+    countEl.className = 'warn';
+    $('profile-data-details').open = true; // auto-expand if empty
+  }
+
   profileSection.classList.remove('hidden');
   emptyState.classList.add('hidden');
   draftForm.classList.remove('hidden');
@@ -96,7 +114,8 @@ function formatProfile(p) {
 // ── Draft call ────────────────────────────────────────────────────────────────
 
 async function draftOpeners({ role, tone, goal }) {
-  const profileText = formatProfile(currentProfile);
+  // Use the (possibly hand-edited) textarea value as the profile text
+  const profileText = $('profile-data-input').value.trim() || formatProfile(currentProfile);
 
   const res = await fetch(`${backendUrl}/api/draft`, {
     method: 'POST',

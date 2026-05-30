@@ -39,13 +39,33 @@ function injectButton() {
   document.body.appendChild(btn);
 }
 
+// ── Auto-scroll to trigger LinkedIn lazy loading ───────────────────────────────
+
+function scrollToReveal() {
+  return new Promise((resolve) => {
+    const totalHeight = document.body.scrollHeight;
+    const step = 600;
+    let current = 0;
+
+    const timer = setInterval(() => {
+      window.scrollBy(0, step);
+      current += step;
+      if (current >= totalHeight) {
+        clearInterval(timer);
+        // Scroll back to top then resolve
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        setTimeout(resolve, 400);
+      }
+    }, 80);
+  });
+}
+
 // ── Profile DOM extraction ────────────────────────────────────────────────────
 
 function extractProfile() {
-  // Name — try DOM selectors first, then fall back to page title
-  // LinkedIn page titles are: "(1) Satya Nadella | LinkedIn" or "Satya Nadella | LinkedIn"
+  // Name — try DOM selectors, fall back to page title
   const nameFromTitle = document.title
-    .replace(/^\(\d+\)\s*/, '')   // strip unread count "(1) "
+    .replace(/^\(\d+\)\s*/, '')
     .split(' | ')[0]
     .trim();
 
@@ -68,7 +88,7 @@ function extractProfile() {
     document.querySelector('[data-field="location_name"]')
   )?.innerText?.trim() || '';
 
-  // About – LinkedIn truncates with "see more"; the full text sits in a sibling span
+  // About
   let about = '';
   const aboutAnchor = document.getElementById('about');
   if (aboutAnchor) {
@@ -87,7 +107,7 @@ function extractProfile() {
   if (expAnchor) {
     const section = expAnchor.closest('section') || expAnchor.parentElement?.parentElement;
     if (section) {
-      experience = section.innerText?.replace(/^Experience\s*/i, '').trim().slice(0, 1500) || '';
+      experience = section.innerText?.replace(/^Experience\s*/i, '').trim().slice(0, 2000) || '';
     }
   }
 
@@ -101,29 +121,49 @@ function extractProfile() {
     }
   }
 
-  // Fallback: pull text from main if we got nothing useful
-  if (!headline && !experience && !about) {
-    const main = document.querySelector('main');
-    if (main) experience = main.innerText.trim().slice(0, 3000);
+  // Skills
+  let skills = '';
+  const skillsAnchor = document.getElementById('skills');
+  if (skillsAnchor) {
+    const section = skillsAnchor.closest('section') || skillsAnchor.parentElement?.parentElement;
+    if (section) {
+      skills = section.innerText?.replace(/^Skills\s*/i, '').trim().slice(0, 400) || '';
+    }
   }
 
-  return { name, headline, location, about, experience, education, url: window.location.href };
+  // Broad fallback: grab all main text if sections are empty
+  const hasContent = about || experience || headline;
+  if (!hasContent) {
+    const main = document.querySelector('main');
+    if (main) experience = main.innerText.trim().slice(0, 4000);
+  }
+
+  return { name, headline, location, about, experience, education, skills, url: window.location.href };
 }
 
 // ── Click handler ─────────────────────────────────────────────────────────────
 
-function handleClick() {
+async function handleClick() {
   const btn = document.getElementById(BUTTON_ID);
   if (btn) {
-    btn.textContent = 'Reading profile…';
+    btn.textContent = 'Scanning profile…';
     btn.disabled = true;
     btn.style.opacity = '0.75';
   }
 
+  // Scroll the page to force LinkedIn to render all lazy-loaded sections
+  await scrollToReveal();
+
   const profile = extractProfile();
 
+  // Guard: extension was reloaded but page wasn't refreshed
+  if (!chrome?.runtime?.id) {
+    alert('Tailor was updated — please refresh this page (F5) and try again.');
+    if (btn) { btn.textContent = 'Refresh page'; btn.disabled = false; btn.style.opacity = '1'; }
+    return;
+  }
+
   chrome.runtime.sendMessage({ type: 'OPEN_PANEL', profile }, () => {
-    // Restore button after a short delay
     setTimeout(() => {
       if (btn) {
         btn.innerHTML = `
@@ -147,13 +187,12 @@ function init() {
 
 init();
 
-// LinkedIn is a SPA – re-inject when the URL changes
 let lastHref = location.href;
 new MutationObserver(() => {
   if (location.href !== lastHref) {
     lastHref = location.href;
     const existing = document.getElementById(BUTTON_ID);
     if (existing) existing.remove();
-    setTimeout(init, 800); // wait for the new page shell to render
+    setTimeout(init, 800);
   }
 }).observe(document.body, { childList: true, subtree: true });
